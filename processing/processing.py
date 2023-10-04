@@ -3,22 +3,31 @@ import pandas as pd
 
 class ProcessingDf:
 
-    def __init__(self, *datasets):
-        self.datasets = datasets
+    def __init__(self, ds1, ds2):
+        self.df1 = ds1
+        self.df2 = ds2
 
-    def unisci(self, chiavi):
+    """
+        nel try-catch prima di mergiare devono essere sistemate le feature 
+    """
+    def mergingDf(self, chiavi):
 
-        if len(self.datasets) < 2:
-            print("Devi fornire almeno due dataset da unire.")
-            return None
         try:
-            dfs = [pd.read_csv(dataset, delimiter='\t') for dataset in self.datasets]
-
-            risultato = dfs[0]
-            for i in range(1, len(dfs)):
-                for chiave in chiavi:
-                    risultato = pd.merge(risultato, dfs[i], on=chiave, how='inner')
+            risultato = pd.merge(self.df1, self.df2,
+                                 on = chiavi, how = 'inner')
             return risultato
         except Exception as e:
             print(f"Si è verificato un errore durante l'unione dei dataset: {str(e)}")
             return None
+
+    def convertObjectType(self, df):
+
+        for colonna in df.columns:
+            # Utilizza il metodo pd.to_numeric() per convertire in numerico se possibile
+            df[colonna] = pd.to_numeric(df[colonna], errors = 'ignore')
+            # Utilizza il metodo pd.to_datetime() per convertire in data se possibile
+            try:
+                df[colonna] = pd.to_datetime(df[colonna])
+            except ValueError:
+                pass  # Se non è possibile convertire in data, continua con il tipo 'object'
+        return df
