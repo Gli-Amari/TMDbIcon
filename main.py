@@ -13,8 +13,35 @@ if __name__ == '__main__':
     df = pd.read_csv('./archive/tmdb_5000_movies.csv')
     df1 = pd.read_csv('./archive/tmdb_5000_credits.csv')
 
-    print(df1["title"])
+    df_temp = df1.apply(lambda row: pd.Series(row['cast']), axis=1).stack().reset_index(level=1,drop=True)
+    df_temp = pd.DataFrame(df_temp, columns=['cast'])
 
+    dff = df_temp.to_dict(orient = 'list')
+
+    for chiave, valore in dff.items():
+        try:
+            dff[chiave] = int(valore)
+        except (ValueError, TypeError):
+            # Se non è possibile convertire il valore in intero, mantieni la stringa originale
+            pass
+
+print(dff['cast_id'])
+
+    new_dataframe_cast = pd.DataFrame({
+        'cast_id': [di['cast_id'] for di in dff],
+        'character': [di['character'] for di in dff],
+        'credit_id': [di['credit_id'] for di in dff],
+        'gender': [di['cast_id'] for di in dff],
+        'id': [di['id'] for di in dff],
+        'name': [di['name'] for di in dff],
+        'order': [di['order'] for di in dff]
+    })
+
+    print(df_temp.info())
+    print("\n")
+    print(new_dataframe_cast)
+    print("\n")
+    print(dff)
 
 
 
