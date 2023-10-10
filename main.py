@@ -1,14 +1,18 @@
 
-from processing.processing import ProcessingDf
+from processing.TMDbAPI import TMDbAPI
 import pandas as pd
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+if __name__ == "__main__":
 
+    api_key = '293e12b22f35ee4b22ee998909252150'
+    endpoint = "movie/popular"  # Esempio: film popolari
+    max_pages = 150  # Numero massimo di pagine da ottenere
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+    TMDbAPI = TMDbAPI(api_key)
 
-    dataset = ProcessingDf('./archive/tmdb_5000_movies.csv')
+    movie_dataframe = TMDbAPI.fetch_movie_data(endpoint, max_pages)
+    movie_dataframe.to_csv("./dataset/Popular_film.csv", index = False)
+
+    df = pd.read_csv("./dataset/Popular_film.csv")
+    print(df.info())
 
