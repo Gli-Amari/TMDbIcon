@@ -29,7 +29,6 @@ class TMDbAPI:
             return []
 
     def fetch_movie_data(self, endpoint, max_pages=15):
-        #tmdb_api = TMDbAPI(api_key)
         data = []
         page = 1
 
@@ -74,6 +73,13 @@ class TMDbAPI:
             page += 1
 
         df = pd.DataFrame(data)
+
+        #drop the column doesn't serves
+        column_to_delete = ["backdrop_path", "belongs_to_collection", "budget",
+                            "poster_path", "video", "revenue"]
+
+        df.drop(column_to_delete, axis = 1, inplace = True)
+
         return df
 
 
