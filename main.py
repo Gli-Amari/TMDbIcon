@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 150  # Numero massimo di pagine da ottenere
+    max_pages = 2  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
 
     TMDbAPI = TMDbAPI(api_key)
@@ -32,4 +32,4 @@ if __name__ == "__main__":
 
     df = pd.read_csv("./dataset/Popular_film.csv")
     print(df.info())
-    print(df['genres'].head())
+    print(df['genres'])

@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import json
 
 
 class TMDbAPI:
@@ -28,7 +29,13 @@ class TMDbAPI:
         else:
             return []
 
-    def fetch_movie_data(self, endpoint, max_pages=15):
+
+    def estrazione(self, df):
+        df['nomi_generi'] = df['genres'].apply(lambda x: x[1] if len(x) >= 2 else None)
+        print(df)
+
+
+    def fetch_movie_data(self, endpoint, max_pages):
         data = []
         page = 1
 
@@ -74,16 +81,10 @@ class TMDbAPI:
 
         df = pd.DataFrame(data)
 
-        #drop the column doesn't serves
+        # drop the column doesn't serves
         column_to_delete = ["backdrop_path", "belongs_to_collection", "budget",
                             "poster_path", "video", "revenue"]
 
         df.drop(column_to_delete, axis = 1, inplace = True)
-
+        self.estrazione(df)
         return df
-
-
-
-
-
-
