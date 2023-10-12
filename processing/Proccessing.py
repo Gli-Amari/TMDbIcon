@@ -3,11 +3,13 @@ from sklearn.preprocessing import OneHotEncoder
 
 class Processing:
 
-    transformes = [
-        ['generes vectorizer', OneHotEncoder(), [1]],
-        ['companies vectorizer', OneHotEncoder(), [11]],
-        ['language vectorizer', OneHotEncoder(), []]
-    ]
-    ct = ColumnTransformer(transformes, remainder= 'passthrough')
+    def __init__(self, df):
+        self.df = df
+
+    def extraction(self, col_name, key):
+        self.df[col_name] = self.df[col_name].apply(lambda x: [item[key] for item in x] if x else None)
+        return self.df
+
+
 
 

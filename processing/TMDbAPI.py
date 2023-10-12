@@ -1,7 +1,5 @@
 import requests
 import pandas as pd
-import json
-
 
 class TMDbAPI:
     def __init__(self, api_key):
@@ -19,21 +17,15 @@ class TMDbAPI:
         else:
             return None
 
-    def get_movies_list(self, endpoint, params=None):
+    def get_movies_list(self, endpoint, params = None):
         full_url = f"{self.base_url}/{endpoint}"
         params = params or {}
         params["api_key"] = self.api_key
-        response = requests.get(full_url, params=params)
+        response = requests.get(full_url, params = params)
         if response.status_code == 200:
             return response.json().get("results", [])
         else:
             return []
-
-
-    def estrazione(self, df):
-        df['nomi_generi'] = df['genres'].apply(lambda x: x[1] if len(x) >= 2 else None)
-        print(df)
-
 
     def fetch_movie_data(self, endpoint, max_pages):
         data = []
@@ -81,10 +73,9 @@ class TMDbAPI:
 
         df = pd.DataFrame(data)
 
-        # drop the column doesn't serves
+        # droppiamo le colonne che non servono a entrambe le KB
         column_to_delete = ["backdrop_path", "belongs_to_collection", "budget",
                             "poster_path", "video", "revenue"]
 
         df.drop(column_to_delete, axis = 1, inplace = True)
-        self.estrazione(df)
         return df
