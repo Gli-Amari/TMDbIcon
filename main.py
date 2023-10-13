@@ -25,16 +25,10 @@ def processingPopularFilmDataset(movie_dataframe):
     processing.extraction(col_name='production_countries', key='iso_3166_1')
     processing.extraction(col_name='spoken_languages', key='iso_639_1')
 
-    # castiamo le feature che contengono solo stringhe in tipi stringhe
-    movie_dataframe['homepage'] = movie_dataframe['homepage'].astype(str)
-    movie_dataframe['imdb_id'] = movie_dataframe['imdb_id'].astype(str)
-    movie_dataframe['original_language'] = movie_dataframe['original_language'].astype(str)
-    movie_dataframe['original_title'] = movie_dataframe['original_title'].astype(str)
-    movie_dataframe['overview'] = movie_dataframe['overview'].astype(str)
-    movie_dataframe['release_date'] = movie_dataframe['release_date'].astype(str)
-    movie_dataframe['status'] = movie_dataframe['status'].astype(str)
-    movie_dataframe['tagline'] = movie_dataframe['tagline'].astype(str)
-    movie_dataframe['title'] = movie_dataframe['title'].astype(str)
+
+
+    movie_dataframe = movie_dataframe.dropna() #cancella righe che contengono NaNg
+    #movie_dataframe = movie_dataframe.drop_duplicates(keep= 'first') #mantiene solo la prima occorrenza dei duplicati
 
     return movie_dataframe
 
@@ -60,4 +54,10 @@ if __name__ == "__main__":
 
     df = pd.read_csv("./dataset/Popular_film.csv")
     print(df.info())
-    print(df)
+    #print(df['production_companies'])
+
+
+
+
+
+
