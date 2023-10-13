@@ -3,7 +3,7 @@ from processing.TMDbAPI import TMDbAPI
 from processing.Proccessing import Processing
 import pandas as pd
 from pathlib import Path
-
+from sklearn.preprocessing import MinMaxScaler
 
 def checking_path(path_csv):
     check_path = Path(path_csv)
@@ -24,6 +24,20 @@ def processingPopularFilmDataset(movie_dataframe):
     processing.extraction(col_name='production_companies', key='name')
     processing.extraction(col_name='production_countries', key='iso_3166_1')
     processing.extraction(col_name='spoken_languages', key='iso_639_1')
+
+    # converto le feature booleane in feature intere
+    movie_dataframe['adult'] = movie_dataframe['adult'].astype(int)
+
+    # converto le feature categoriche in feature intere (un film puo essere rilasciato o meno per ese.)
+    movie_dataframe['status'] = movie_dataframe['status'].replace('Released', 1)
+    movie_dataframe['status'] = movie_dataframe['status'].replace('Not Released', 0)
+
+    # converto le feature di tipo float in feature intere
+    movie_dataframe['vote_average'] = movie_dataframe['vote_average'].round().astype(int)
+
+    # sta da normalizzare meglio, non so se renderla un valore compreso tra 0 e 100, o usare il max/min
+    scaler = MinMaxScaler()
+    #movie_dataframe['popularity'] = movie_dataframe['popularity'].round().astype(int)
 
 
 
@@ -54,7 +68,7 @@ if __name__ == "__main__":
 
     df = pd.read_csv("./dataset/Popular_film.csv")
     print(df.info())
-    #print(df['production_companies'])
+    print(df['popularity'])
 
 
 
