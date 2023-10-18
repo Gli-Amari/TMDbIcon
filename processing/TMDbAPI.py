@@ -75,7 +75,8 @@ class TMDbAPI:
 
         # droppiamo le colonne che non servono a entrambe le KB
         column_to_delete = ["backdrop_path", "belongs_to_collection", "budget",
-                            "poster_path", "video", "revenue"]
+                            "poster_path", "video", "revenue", "homepage", "tagline",
+                            "imdb_id"]
 
         df.drop(column_to_delete, axis = 1, inplace = True)
         return df

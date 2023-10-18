@@ -1,4 +1,4 @@
-from datetime import datetime
+
 from processing.TMDbAPI import TMDbAPI
 from processing.Proccessing import Processing
 import pandas as pd
@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 def checking_path(path_csv):
     check_path = Path(path_csv)
     if check_path.is_dir():
-        complete_path = Path(path_csv + "Popular_film.csv")
+        complete_path = Path(path_csv + "normalized_Popular_film.csv")
         if complete_path.exists():
             return True
         else:
@@ -31,18 +31,23 @@ def processingPopularFilmDataset(movie_dataframe):
     # converto le feature categoriche in feature intere (un film puo essere rilasciato o meno per ese.)
     movie_dataframe['status'] = movie_dataframe['status'].replace('Released', 1)
     movie_dataframe['status'] = movie_dataframe['status'].replace('Not Released', 0)
+    movie_dataframe['status'] = movie_dataframe['status'].replace('Post Production', 2)
+    movie_dataframe['status'] = movie_dataframe['status'].replace('In Production', 2)
+    movie_dataframe['status'] = movie_dataframe['status'].replace('Planned', 3)
+    movie_dataframe['status'] = movie_dataframe['status'].astype(int)
+
+    #salvo in movie_Dataframe['genres'] il primo nome rilevante della lista di generi associata
+    processing.getFirstValueFromFeature('genres')
+    processing.getFirstValueFromFeature('spoken_languages')
+    processing.getFirstValueFromFeature('production_countries')
+    processing.getFirstValueFromFeature('production_companies')
 
     # converto le feature di tipo float in feature intere
     movie_dataframe['vote_average'] = movie_dataframe['vote_average'].round().astype(int)
-
-    # sta da normalizzare meglio, non so se renderla un valore compreso tra 0 e 100, o usare il max/min
     scaler = MinMaxScaler()
-    #movie_dataframe['popularity'] = movie_dataframe['popularity'].round().astype(int)
-
-
+    movie_dataframe['popularity'] = scaler.fit_transform(movie_dataframe[['popularity']])
 
     movie_dataframe = movie_dataframe.dropna() #cancella righe che contengono NaNg
-    #movie_dataframe = movie_dataframe.drop_duplicates(keep= 'first') #mantiene solo la prima occorrenza dei duplicati
 
     return movie_dataframe
 
@@ -51,13 +56,13 @@ if __name__ == "__main__":
 
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 2  # Numero massimo di pagine da ottenere
+    max_pages = 150  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
 
     # estrazione dati da server TMDb
     TMDbAPI = TMDbAPI(api_key)
 
-    complete_path = path_csv + "Popular_film.csv"
+    complete_path = path_csv + "normalized_Popular_film.csv"
     if checking_path(path_csv) is False:
         movie_dataframe = TMDbAPI.fetch_movie_data(endpoint, max_pages)
 
@@ -66,10 +71,10 @@ if __name__ == "__main__":
 
         movie_dataframe.to_csv(complete_path, index=False)
 
-    df = pd.read_csv("./dataset/Popular_film.csv")
-    print(df.info())
-    print(df['popularity'])
+    df = pd.read_csv("./dataset/normalized_Popular_film.csv")
 
+    print(df['popularity'], df['vote_average'], df['vote_count'])
+    print(df.info())
 
 
 
