@@ -42,12 +42,14 @@ def processingPopularFilmDataset(movie_dataframe):
     processing.getFirstValueFromFeature('production_countries')
     processing.getFirstValueFromFeature('production_companies')
 
-    # minmax scaler
+    # minmax scaler (dubbio se normalizzare prima o normalizzare dopo il KB!)
     movie_dataframe['vote_average'] = movie_dataframe['vote_average'].round().astype(int)
     scaler = MinMaxScaler()
     movie_dataframe['popularity'] = scaler.fit_transform(movie_dataframe[['popularity']])
     movie_dataframe['vote_average'] = scaler.fit_transform(movie_dataframe[['vote_average']])
     movie_dataframe['vote_count'] = scaler.fit_transform(movie_dataframe[['vote_count']])
+
+    processing.create_feature_target()
 
     movie_dataframe = movie_dataframe.dropna() #cancella righe che contengono NaNg
 
@@ -75,9 +77,19 @@ if __name__ == "__main__":
 
     df = pd.read_csv("./dataset/normalized_Popular_film.csv")
 
-    print(df['popularity'], df['vote_average'], df['vote_count'])
-    print(df.info())
+    # Supponiamo che tu abbia già un dataframe df e la lista delle selected features
+    selected_features = ['title', 'popularity', 'vote_average', 'vote_count', 'Likeable']
+    selected_data = df[selected_features]
 
+    # Genera un campione casuale di 5 righe
+    sample_data = selected_data.sample(n=5, random_state=20)
+
+    # Ordina il campione in base a 'popularity', 'vote_count' e 'vote_average'
+    sample_data_sorted = sample_data.sort_values(by=['popularity', 'vote_count', 'vote_average'],
+                                                 ascending=[False, False, False])
+
+    # Stampa il campione ordinato
+    print(sample_data_sorted)
 
 
 

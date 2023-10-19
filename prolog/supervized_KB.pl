@@ -1,24 +1,40 @@
 
 :-style_check(-singleton).
 
-% fatti sulla media dei voti
-vote_average()
+% abbiamo voluto creare i fatti su un sample di 5 esempi per dimostrare le regole
 
-% fatti sui film
-film('Movie1', 0.666667, 0.148868, 1.000000).
-film('Movie2', 0.565658, 0.145263, 0.991558).
-film('Movie3', 8.2, 800, 60).
-film('Movie4', 5.5, 200, 30).
+% fatti sulla media dei voti
+vote_average('Sound of Freedom', 1.000000).
+vote_average('Killers of the Flower Moon', 1.000000).
+vote_average('Saw X', 0.666667).
+vote_average('The Nun II', 0.666667).
+vote_average('Fast X', 0.666667).
+
+% fatti sul conteggio dei voti
+vote_count('Sound of Freedom', 0.133923).
+vote_count('Killers of the Flower Moon', 0.002612).
+vote_count('Saw X', 0.022780).
+vote_count('The Nun II', 0.148868).
+vote_count('Fast X', 0.583720).
+
+% fatti sulla popolarità dei film
+popularity('Sound of Freedom', 0.325080).
+popularity('Killers of the Flower Moon', 0.111543).
+popularity('Saw X', 0.140075).
+popularity('The Nun II', 0.542824).
+popularity('Fast X', 0.162078).
 
 % Regola: Calcola una feature di gradimento basata su vote_average, vote_count, e popularity
-gradimento(NomeFilm, Gradimento) :-
-    film(NomeFilm, VoteAverage, VoteCount, Popularity),
-    Gradimento is ((VoteAverage * 0.3) + (VoteCount * 0.3) + (Popularity * 0.4)) * 0.2.
+gradimento(film(NomeFilm, VoteAverage, VoteCount, Popularity), Gradimento) :-
+    vote_average(NomeFilm, VoteAverage),
+    vote_count(NomeFilm, VoteCount),
+    popularity(NomeFilm, Popularity),
+    Gradimento is ((VoteAverage * 0.3) + (VoteCount * 0.3) + (Popularity * 0.4)) * 100.
 
 % Regola: Calcola il valore di gradimento (0 o 1) basato sul gradimento
-valore_gradimento(NomeFilm, Valore) :-
+valore_gradimento(film(NomeFilm, VoteAverage, VoteCount, Popularity), Valore) :-
     gradimento(NomeFilm, Gradimento),
-    (Gradimento > 0.5 -> Valore = 1 ; Valore = 0).
+    (Gradimento >= 50 -> Valore = 1 ; Valore = 0).
 
 % Esempi di utilizzo
 film_gradito(NomeFilm) :-
