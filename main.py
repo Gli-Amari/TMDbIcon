@@ -1,9 +1,13 @@
-
 from processing.TMDbAPI import TMDbAPI
 from processing.Proccessing import Processing
 import pandas as pd
 from pathlib import Path
+from pyswip import Prolog
 from sklearn.preprocessing import MinMaxScaler
+
+import networkx as nx
+import matplotlib.pyplot as plt
+from networkx.drawing.nx_pydot import graphviz_layout
 
 def checking_path(path_csv):
     check_path = Path(path_csv)
@@ -16,7 +20,9 @@ def checking_path(path_csv):
 
 
 # richiamo in una routine esclusivamente le op. per fare processing su dataset Popular_film!
-def processingPopularFilmDataset(movie_dataframe):
+def processingPopularFilmDataset(complete_path, path_csv):
+
+    movie_dataframe = TMDbAPI.fetch_movie_data(endpoint, max_pages)
     processing = Processing(movie_dataframe)
 
     # sistemiamo le feature che hanno al loro interno piu valori (un film puo aver piu generi per ese.)
@@ -36,7 +42,7 @@ def processingPopularFilmDataset(movie_dataframe):
     movie_dataframe['status'] = movie_dataframe['status'].replace('Planned', 3)
     movie_dataframe['status'] = movie_dataframe['status'].astype(int)
 
-    #salvo in movie_Dataframe['genres'] il primo nome rilevante della lista di generi associata
+    # salvo in movie_Dataframe['genres'] il primo nome rilevante della lista di generi associata
     processing.getFirstValueFromFeature('genres')
     processing.getFirstValueFromFeature('spoken_languages')
     processing.getFirstValueFromFeature('production_countries')
@@ -49,9 +55,10 @@ def processingPopularFilmDataset(movie_dataframe):
     movie_dataframe['vote_average'] = scaler.fit_transform(movie_dataframe[['vote_average']])
     movie_dataframe['vote_count'] = scaler.fit_transform(movie_dataframe[['vote_count']])
 
-    processing.create_feature_target()
+    movie_dataframe = movie_dataframe.dropna()  # cancella righe che contengono NaNg
 
-    movie_dataframe = movie_dataframe.dropna() #cancella righe che contengono NaNg
+    if checking_path(path_csv) is False:
+        movie_dataframe.to_csv(complete_path, index=False)
 
     return movie_dataframe
 
@@ -60,37 +67,20 @@ if __name__ == "__main__":
 
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 2  # Numero massimo di pagine da ottenere
+    max_pages = 150  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
 
     # estrazione dati da server TMDb
     TMDbAPI = TMDbAPI(api_key)
 
     complete_path = path_csv + "normalized_Popular_film.csv"
-    if checking_path(path_csv) is False:
-        movie_dataframe = TMDbAPI.fetch_movie_data(endpoint, max_pages)
 
-        # processing dataset Popular_film
-        processingPopularFilmDataset(movie_dataframe)
-
-        movie_dataframe.to_csv(complete_path, index=False)
+    # processing dataset Popular_film
+    processingPopularFilmDataset(complete_path, path_csv)
 
     df = pd.read_csv("./dataset/normalized_Popular_film.csv")
 
-    # Supponiamo che tu abbia già un dataframe df e la lista delle selected features
-    selected_features = ['title', 'popularity', 'vote_average', 'vote_count', 'Likeable']
-    selected_data = df[selected_features]
-
-    # Genera un campione casuale di 5 righe
-    sample_data = selected_data.sample(n=5, random_state=20)
-
-    # Ordina il campione in base a 'popularity', 'vote_count' e 'vote_average'
-    sample_data_sorted = sample_data.sort_values(by=['popularity', 'vote_count', 'vote_average'],
-                                                 ascending=[False, False, False])
-
-    # Stampa il campione ordinato
-    print(sample_data_sorted)
-
-
-
+    #creazione feature target
+    processing = Processing(df)
+    processing.KBInterrogation()
 
