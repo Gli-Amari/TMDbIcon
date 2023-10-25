@@ -2,12 +2,14 @@ from processing.TMDbAPI import TMDbAPI
 from processing.Proccessing import Processing
 import pandas as pd
 from pathlib import Path
+from sklearn.model_selection import train_test_split
 from pyswip import Prolog
 from sklearn.preprocessing import MinMaxScaler
-
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import graphviz_layout
+
+from models.KNN import KNN
 
 def checking_path(path_csv):
     check_path = Path(path_csv)
@@ -67,7 +69,7 @@ if __name__ == "__main__":
 
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 150  # Numero massimo di pagine da ottenere
+    max_pages = 2  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
 
     # estrazione dati da server TMDb
@@ -84,3 +86,13 @@ if __name__ == "__main__":
     processing = Processing(df)
     processing.KBInterrogation()
 
+    #il nostro dataset
+    seed = 20
+    normal_dataset = pd.read_csv("./dataset/normalized_Popular_film.csv")
+    X = normal_dataset
+    Y =normal_dataset['likeable']
+    X = X.drop('likeable', axis = 1)
+    X_train, X_test, Y_train, Y_set = train_test_split(X, Y, stratify = Y, test_size = 0.30, train_size = 0.70, shuffle = True, random_state = seed)
+
+    print("Risultati ottenuti dai modelli")
+    KNN(X_train, X_test, Y_train, Y_set).evalutation_models(seed)

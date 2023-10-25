@@ -23,7 +23,7 @@ class Processing:
                        +','+ str(row['vote_count'])+','+ str(row['popularity'])+','+'Rating'+','+'Res).')
             result.append(list(prolog.query(assertz))[0]['Res'])
 
-        self.df['Likeable'] = result
+        self.df['likeable'] = result
         print(self.df)
 
     def getFirstValueFromFeature(self, col_name):
