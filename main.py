@@ -5,8 +5,9 @@ from processing.Proccessing import Processing
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-
+from models.DecisionTreeClassifier import DecisionTreeClassifier
 from models.KNN import KNN
+from models.RandomForest import RandomForest
 
 
 def checking_path(path_csv):
@@ -85,7 +86,11 @@ if __name__ == "__main__":
     X = df
     Y = df['likeable']
     X = X.drop('likeable', axis=1)
-    X_train, X_test, Y_train, Y_set = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
-                                                       random_state=seed)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
+                                                        random_state=seed)
     print("Risultati ottenuti dai modelli")
-    KNN(X_train, X_test, Y_train, Y_set).evaluation_models(seed)
+    # KNN(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
+
+    RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
+
+    # DecisionTreeClassifier(X_train, X_test, Y_train, Y_test).evaluation_models(seed, 'DecisionTree.dot')
