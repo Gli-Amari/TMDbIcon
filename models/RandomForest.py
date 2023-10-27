@@ -1,6 +1,6 @@
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RepeatedStratifiedKFold, GridSearchCV, learning_curve
@@ -10,12 +10,16 @@ class RandomForest:
 
     def __init__(self, x_train, x_test, y_train, y_test):
         self.rfc = RandomForestClassifier()
-        self.x_train: pd.DataFrame = x_train
-        self.x_test: pd.DataFrame = x_test
-        self.y_train: pd.DataFrame = y_train
-        self.y_test: pd.DataFrame = y_test
+        self.x_train = x_train
+        self.x_test = x_test
+        self.y_train= y_train
+        self.y_test= y_test
 
     def evaluation_models(self, seed):
+        imputer = SimpleImputer(strategy='mean')
+        self.x_train = imputer.fit_transform(self.x_train)
+        self.x_test = imputer.transform(self.x_test)
+
         param_dist = {
             'n_estimators': np.arange(3, 25),
             'max_depth': np.arange(3, 15)

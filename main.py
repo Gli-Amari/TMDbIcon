@@ -89,8 +89,8 @@ if __name__ == "__main__":
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
                                                         random_state=seed)
     print("Risultati ottenuti dai modelli")
-    # KNN(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
+    KNN(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
 
-    RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
+    #RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
 
     # DecisionTreeClassifier(X_train, X_test, Y_train, Y_test).evaluation_models(seed, 'DecisionTree.dot')
