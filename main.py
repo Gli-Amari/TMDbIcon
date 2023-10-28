@@ -60,6 +60,8 @@ def processingPopularFilmDataset(complete_path, path_csv):
     processing.minMaxScaler(col_name='vote_count')
     processing.minMaxScaler(col_name='popularity')
 
+    processing.string_to_integer(col_name='title')
+
     processing.dropNaN()
 
     normalized_df = processing.KBInterrogation()
@@ -71,7 +73,7 @@ def processingPopularFilmDataset(complete_path, path_csv):
 if __name__ == "__main__":
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 150  # Numero massimo di pagine da ottenere
+    max_pages = 100  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
 
     # estrazione dati da server TMDb
@@ -89,8 +91,10 @@ if __name__ == "__main__":
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
                                                         random_state=seed)
     print("Risultati ottenuti dai modelli")
-    KNN(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
 
-    #RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
+    KNN(X_train, X_test, Y_train, Y_test, df).evaluation_models(seed)
+
+    # RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
 
     # DecisionTreeClassifier(X_train, X_test, Y_train, Y_test).evaluation_models(seed, 'DecisionTree.dot')
+    # knn2.evaluation_models()

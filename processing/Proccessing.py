@@ -1,3 +1,4 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 from pyswip import Prolog
@@ -27,7 +28,7 @@ class Processing:
         return self.df
 
     def dropNaN(self):
-        self.df.dropna()
+        self.df.dropna(inplace=True)
         return self.df
 
     def replaceIso3166(self, col_name):
@@ -210,3 +211,11 @@ class Processing:
         plt.ylabel('Frequenza')
         plt.title('Esempio di Istogramma')
         return plt.show()
+
+    def integer_to_string(self, col_name):
+        self.df[col_name] = self.df[col_name].apply(lambda x: x.to_bytes((x.bit_length() + 7) // 8, 'big').decode())
+        return self.df
+
+    def string_to_integer(self, col_name):
+        self.df[col_name] = self.df[col_name].apply(lambda x: int.from_bytes(x.encode(), 'big'))
+        return self.df

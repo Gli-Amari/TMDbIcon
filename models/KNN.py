@@ -1,27 +1,29 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV, validation_curve, learning_curve, RepeatedStratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.impute import SimpleImputer  # Aggiunto SimpleImputer per valorizzare i NaN
 import pandas as pd
+from processing.Proccessing import Processing
 
 
 class KNN:
-    def __init__(self, x_train, x_test, y_train, y_test):
+    def __init__(self, x_train, x_test, y_train, y_test, df):
         self.knn = KNeighborsClassifier()
         self.x_train = x_train
         self.x_test = x_test
         self.y_train = y_train
         self.y_test = y_test
+        self.df: pd.DataFrame = df
 
     def evaluation_models(self, seed):
         imputer = SimpleImputer(strategy='mean')
         self.x_train = imputer.fit_transform(self.x_train)
         self.x_test = imputer.transform(self.x_test)
-
+        
         self.knn.fit(self.x_train, self.y_train)
-        param_grid = dict(n_neighbors=list(range(1, 200)))
+        param_grid = dict(n_neighbors=list(range(1, 100)))
 
         cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=seed)
         grid = GridSearchCV(self.knn, param_grid, cv=cv, scoring="accuracy", error_score=0)
@@ -75,17 +77,20 @@ class KNN:
         best_model.fit(self.x_train, self.y_train)
         y_pred = best_model.predict(self.x_test)
 
-        # Lista di film basata sulle predizioni del modello KNN
-        film_list = []
-        for i in range(len(y_pred)):
-            if y_pred[i] == 1:  # Supponendo che 1 rappresenti la classe dei film che desideri includere nella lista
-                film_list.append(y_pred[i])  # Aggiungi il nome del film alla lista
 
-        # Se la lista di film è più lunga di 30, prendi solo i primi 30 film
-        film_list = film_list[:30]
 
-        # Stampa la lista di film
-        print(y_pred)
+        # Aggiungi le previsioni al tuo dataframe dei dati
+        self.df['predicted_likeable'] = y_pred
+
+        # Seleziona i film che possono piacere
+        films_to_like = self.df[self.df['predicted_likeable'] == 1]
+
+        processing = Processing(films_to_like)
+        data_frame = processing.integer_to_string(col_name='title')
+
+        # Mostra i film che possono piacere
+        print("Film che possono piacere:")
+        print(data_frame['title', 'likeable'])
 
         print("Report K-NN di classificazione: ")
         print(classification_report(y_pred, self.y_test))
