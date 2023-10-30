@@ -186,6 +186,9 @@ class Processing:
         self.df[col_name] = self.df[col_name].map(iso_mapping)
         return self.df
 
+    def getSeriesFromDf(self, col_name):
+        return self.df[col_name]
+
     def KBInterrogation(self):
         prolog = Prolog()
         prolog.consult('./supervized_KB.pl')
@@ -205,24 +208,14 @@ class Processing:
         self.df[col_name] = self.df[col_name].str.replace("'", "")
         return self.df
 
-    def histDataset(self):
-        plt.hist(self.df, bins=6, edgecolor='black', alpha=0.7)
-        plt.xlabel('Valori')
-        plt.ylabel('Frequenza')
-        plt.title('Esempio di Istogramma')
-        return plt.show()
-
     def integer_to_string(self, col_name):
-        #self.df[col_name] = self.df[col_name].apply(lambda x: x.to_bytes((x.bit_length() + 7) // 8, 'big').decode())
-        #self.df[col_name] = self.df[col_name].apply(lambda x: str(x))
         interi_a_titoli = {indice: titolo for titolo, indice in self.df[col_name].items()}
 
         # Ora, mappa i valori interi nella colonna 'title' alle stringhe originali
-        self.df.loc[:, 'title'] = self.df['title'].map(interi_a_titoli)
+        self.df.loc[:, col_name] = self.df[col_name].map(interi_a_titoli)
         return self.df
 
     def string_to_integer(self, col_name):
-        #self.df[col_name] = self.df[col_name].apply(lambda x: int.from_bytes(x.encode(), 'big'))
         titoli_univoci = self.df[col_name].unique()
         titoli_a_interi = {titolo: indice for indice, titolo in enumerate(titoli_univoci)}
         self.df[col_name] = self.df[col_name].map(titoli_a_interi)

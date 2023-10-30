@@ -60,14 +60,25 @@ def processingPopularFilmDataset(complete_path, path_csv):
     processing.minMaxScaler(col_name='vote_count')
     processing.minMaxScaler(col_name='popularity')
 
-    processing.string_to_integer(col_name='title')
-
     processing.dropNaN()
 
     normalized_df = processing.KBInterrogation()
 
     if checking_path(path_csv) is False:
         normalized_df.to_csv(complete_path, index=False)
+
+
+def entryPointKNN(df, seed):
+    df_titles = df['title']
+    df = df.drop('title', axis=1)
+
+    X = df
+    Y = df['likeable']
+    X = X.drop('likeable', axis=1)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
+                                                        random_state=seed)
+    print("Risultati del modelli")
+    KNN(X_train, X_test, Y_train, Y_test, df_titles).evaluation_models(seed)
 
 
 if __name__ == "__main__":
@@ -83,16 +94,10 @@ if __name__ == "__main__":
         complete_path = path_csv + "normalized_Popular_film.csv"
         processingPopularFilmDataset(complete_path, path_csv)
 
-    seed = 53
     df = pd.read_csv("./dataset/normalized_Popular_film.csv")
-    X = df
-    Y = df['likeable']
-    X = X.drop('likeable', axis=1)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
-                                                        random_state=seed)
-    print("Risultati ottenuti dai modelli")
 
-    KNN(X_train, X_test, Y_train, Y_test, df).evaluation_models(seed)
+    #modelli di apprendimento supervisionato
+    entryPointKNN(df, seed=53)
 
     # RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
 
