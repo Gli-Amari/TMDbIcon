@@ -77,12 +77,10 @@ class KNN:
         best_model.fit(self.x_train, self.y_train)
         y_pred = best_model.predict(self.x_test)
 
+        lunghezza_y_pred = len(y_pred)
 
-
-        # Aggiungi le previsioni al tuo dataframe dei dati
-        self.df['predicted_likeable'] = y_pred
-
-        # Seleziona i film che possono piacere
+        # Assegna i valori di y_pred alle righe corrispondenti di df
+        self.df.loc[:lunghezza_y_pred - 1, 'predicted_likeable'] = y_pred
         films_to_like = self.df[self.df['predicted_likeable'] == 1]
 
         processing = Processing(films_to_like)
@@ -90,7 +88,7 @@ class KNN:
 
         # Mostra i film che possono piacere
         print("Film che possono piacere:")
-        print(data_frame['title', 'likeable'])
+        print(data_frame[['title', 'likeable']])
 
         print("Report K-NN di classificazione: ")
         print(classification_report(y_pred, self.y_test))

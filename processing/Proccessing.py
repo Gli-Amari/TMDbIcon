@@ -213,7 +213,8 @@ class Processing:
         return plt.show()
 
     def integer_to_string(self, col_name):
-        self.df[col_name] = self.df[col_name].apply(lambda x: x.to_bytes((x.bit_length() + 7) // 8, 'big').decode())
+        #self.df[col_name] = self.df[col_name].apply(lambda x: x.to_bytes((x.bit_length() + 7) // 8, 'big').decode())
+        self.df[col_name] = self.df[col_name].apply(lambda x: str(x))
         return self.df
 
     def string_to_integer(self, col_name):
