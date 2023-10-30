@@ -83,11 +83,12 @@ class KNN:
         self.df.loc[:lunghezza_y_pred - 1, 'predicted_likeable'] = y_pred
         films_to_like = self.df[self.df['predicted_likeable'] == 1]
 
+        # Mostra i film che possono piacere
+        print("Film che possono piacere:")
+
         processing = Processing(films_to_like)
         data_frame = processing.integer_to_string(col_name='title')
 
-        # Mostra i film che possono piacere
-        print("Film che possono piacere:")
         print(data_frame[['title', 'likeable']])
 
         print("Report K-NN di classificazione: ")
