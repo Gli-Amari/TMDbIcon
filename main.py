@@ -75,7 +75,7 @@ def entryPointKNN(df, seed):
     X = df
     Y = df['likeable']
     X = X.drop('likeable', axis=1)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.30, train_size=0.70, shuffle=True,
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.50, train_size=0.50, shuffle=True,
                                                         random_state=seed)
     print("Risultati del modelli")
     KNN(X_train, X_test, Y_train, Y_test, df_titles).evaluation_models(seed)
@@ -84,7 +84,7 @@ def entryPointKNN(df, seed):
 if __name__ == "__main__":
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 1  # Numero massimo di pagine da ottenere
+    max_pages = 150  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
 
     # estrazione dati da server TMDb
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     df = pd.read_csv("./dataset/normalized_Popular_film.csv")
 
     #modelli di apprendimento supervisionato
-    #entryPointKNN(df, seed=53)
+    #entryPointKNN(df, seed=23)
 
     # RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
 
