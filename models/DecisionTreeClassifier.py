@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import RepeatedStratifiedKFold, GridSearchCV, learning_curve
 from sklearn import tree
@@ -27,7 +28,7 @@ class MyDecisionTreeClassifier:
 
         print('ALBERO RISULTANTE')
         tree.export_graphviz(best_model,
-                             out_file='../TreeGraph/' + file_name, feature_names=self.x_train.columns.tolist(),
+                             out_file='./TreeGraph/' + file_name, feature_names=self.x_train.columns.tolist(),
                              class_names=list(map(lambda x: str(x), self.y_train.unique().tolist())),
                              filled=True,
                              rounded=True

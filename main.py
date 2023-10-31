@@ -1,11 +1,12 @@
 import os
 
+from models.LinearRegression import RegressioneLineare
 from processing.TMDbAPI import TMDbAPI
 from processing.Proccessing import Processing
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from models.DecisionTreeClassifier import DecisionTreeClassifier
+from models.DecisionTreeClassifier import DecisionTreeClassifier, MyDecisionTreeClassifier
 from models.KNN import KNN
 from models.RandomForest import RandomForest
 
@@ -68,19 +69,6 @@ def processingPopularFilmDataset(complete_path, path_csv):
         normalized_df.to_csv(complete_path, index=False)
 
 
-def entryPointKNN(df, seed):
-    df_titles = df['title']
-    df = df.drop('title', axis=1)
-
-    X = df
-    Y = df['likeable']
-    X = X.drop('likeable', axis=1)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, stratify=Y, test_size=0.50, train_size=0.50, shuffle=True,
-                                                        random_state=seed)
-    print("Risultati del modelli")
-    KNN(X_train, X_test, Y_train, Y_test, df_titles).evaluation_models(seed)
-
-
 if __name__ == "__main__":
     api_key = '293e12b22f35ee4b22ee998909252150'
     endpoint = "movie/popular"  # Esempio: film popolari
@@ -97,9 +85,26 @@ if __name__ == "__main__":
     df = pd.read_csv("./dataset/normalized_Popular_film.csv")
 
     #modelli di apprendimento supervisionato
-    #entryPointKNN(df, seed=23)
+    seed = 53
+    df_titles = df['title']
+    df = df.drop('title', axis=1)
+    X = df
+    Y = df['likeable']
+    X = X.drop('likeable', axis=1)
+    x_train, x_test, y_train_reg, y_test_reg = train_test_split(X, Y,
+                                                                stratify=round(Y),
+                                                                test_size=0.30,
+                                                                train_size=0.70,
+                                                                shuffle=True, random_state=seed)
+    y_train = round(y_train_reg)
+    y_test = round(y_test_reg)
 
-    # RandomForest(X_train, X_test, Y_train, Y_test).evaluation_models(seed)
-
-    # DecisionTreeClassifier(X_train, X_test, Y_train, Y_test).evaluation_models(seed, 'DecisionTree.dot')
-    # knn2.evaluation_models()
+    print("risultati ottenuti dai modelli")
+    #RandomForest(x_train, x_test, y_train, y_test, df_titles).evaluation_models(seed)
+    MyDecisionTreeClassifier(x_train, x_test, y_train, y_test).evaluation_model(seed, 'decisionTree.dot')
+    #SVM(x_train, x_test, y_train, y_test).evaluate_model(seed)
+    #KNN(x_train, x_test, y_train, y_test).evaluation_model(seed)
+    #NeuralNetwork(x_train, x_test, y_train, y_test).evaluate_model(seed)
+    #GaussianNeuralBayes(x_train, x_test, y_train, y_test).evaluate_model(seed)
+    #RegressioneLineare(x_train, x_test, y_train_reg, y_test_reg, df_titles).evaluate_model(seed)
+    #LogisticRegressionClass(x_train, x_test, y_train, y_test).evaluate_model(seed)
