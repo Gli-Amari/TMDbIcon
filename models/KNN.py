@@ -84,8 +84,11 @@ class KNN:
         ypred = pd.DataFrame({'predicted_likeable': y_pred})
         films_to_like = pd.concat([self.df_titles, ypred], axis=1)
 
+        filtered_df = films_to_like[films_to_like['predicted_likeable'] == 1]
+
+
         # Mostra i film che possono piacere
         print("Film che possono piacere:")
         print(films_to_like.columns)
-        print(films_to_like[['title', 'predicted_likeable']].head(20))
+        print(filtered_df[['title', 'predicted_likeable']].head(20))
 

@@ -194,9 +194,9 @@ class Processing:
         prolog.consult('./supervized_KB.pl')
         result = []
         for _, row in self.df.iterrows():
-            assertz = ('gradimento(' + str(row['vote_average'])
-                       + ',' + str(row['vote_count']) + ',' + str(row['popularity']) + ',' + 'Rating' + ',' + 'Res).')
-            result.append(list(prolog.query(assertz))[0]['Res'])
+            assertz = ('gradimento_bilanciato(' + str(row['vote_average'])
+                       + ',' + str(row['vote_count']) + ',' + str(row['popularity']) + ',' + 'Ratio).')
+            result.append(list(prolog.query(assertz))[0]['Ratio'])
 
         self.df['likeable'] = result
         return self.df
