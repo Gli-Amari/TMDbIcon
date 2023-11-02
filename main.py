@@ -1,14 +1,14 @@
+import json
 import os
-
-from models.LinearRegression import RegressioneLineare
-from processing.TMDbAPI import TMDbAPI
-from processing.Proccessing import Processing
 import pandas as pd
 from pathlib import Path
+from DataExploration.PlottingGraphs import PlottingGraphs
 from sklearn.model_selection import train_test_split
 from models.DecisionTreeClassifier import DecisionTreeClassifier, MyDecisionTreeClassifier
 from models.KNN import KNN
 from models.RandomForest import RandomForest
+from models.LinearRegression import RegressioneLineare
+from processing.Proccessing import Processing
 
 
 def checking_path(path_csv):
@@ -21,90 +21,138 @@ def checking_path(path_csv):
             return False
 
 
-# richiamo in una routine esclusivamente le op. per fare processing su dataset Popular_film!
-def processingPopularFilmDataset(complete_path, path_csv):
-    movie_dataframe = TMDbAPI.fetch_movie_data(endpoint, max_pages)
-    processing = Processing(movie_dataframe)
+def director(x):
+    for i in x:
+        if i['job'] == 'Director':
+            return i['name']
 
-    # sistemiamo le feature che hanno al loro interno piu valori (un film puo aver piu generi per ese.)
-    processing.extraction(col_name='genres', key='id')
-    processing.extraction(col_name='production_companies', key='id')
-    processing.extraction(col_name='production_countries', key='iso_3166_1')
-    processing.extraction(col_name='spoken_languages', key='iso_639_1')
 
-    # converto le feature booleane in feature intere
-    processing.convertFeatureToInt(col_name='adult')
+def processingDataset(complete_path, path_csv):
+    movie_dataframe = pd.read_csv("./dataset/tmdb_5000_movies.csv")
+    credits_dataframe = pd.read_csv("./dataset/tmdb_5000_credits.csv")
 
-    # converto le feature categoriche in feature intere (un film puo essere rilasciato o meno per ese.)
-    processing.replaceFeatureValue(col_name='status', valueToReplace='Released', value=1)
-    processing.replaceFeatureValue(col_name='status', valueToReplace='Not Released', value=0)
-    processing.replaceFeatureValue(col_name='status', valueToReplace='Post Production', value=2)
-    processing.replaceFeatureValue(col_name='status', valueToReplace='In Production', value=3)
-    processing.replaceFeatureValue(col_name='status', valueToReplace='Planned', value=3)
+    processing = Processing(df_movies=movie_dataframe, df_credits=credits_dataframe, df=None)
+    processing.convertJSONToStringMovies(col_name='genres', value_index='name')
+    processing.convertJSONToStringMovies(col_name='keywords', value_index='name')
+    processing.convertJSONToStringMovies(col_name='production_countries', value_index='iso_3166_1')
+    processing.convertJSONToStringMovies(col_name='production_companies', value_index='name')
+    processing.convertJSONToStringMovies(col_name='spoken_languages', value_index='iso_639_1')
 
-    processing.convertFeatureToInt(col_name='status')
+    processing.convertJSONToStringCredits(col_name='cast', value_index='name')
 
-    # salvo in movie_Dataframe['genres'] il primo nome rilevante della lista di generi associata
-    processing.getFirstValueFromFeature('genres')
-    processing.getFirstValueFromFeature('spoken_languages')
-    processing.getFirstValueFromFeature('production_countries')
-    processing.getFirstValueFromFeature('production_companies')
+    credits = processing.getDfCredits()
+    movies = processing.getDfMovies()
 
-    processing.replaceIso3166(col_name='production_countries')
-    processing.replaceIso639(col_name='spoken_languages')
-    processing.replaceIso639(col_name='original_language')
+    credits['crew'] = credits['crew'].apply(json.loads)
+    credits['crew'] = credits['crew'].apply(director)
+    credits.rename(columns={'crew': 'director'}, inplace=True)
 
-    # minmax scaler (dubbio se normalizzare prima o normalizzare dopo il KB!)
-    movie_dataframe['vote_average'] = movie_dataframe['vote_average'].round().astype(int)
+    daataframe_merged = movies.merge(credits, left_on='id', right_on='movie_id', how='left')
+    daataframe_merged = daataframe_merged[['id', 'original_title', 'original_language',
+                                           'overview', 'genres',
+                                           'cast', 'keywords',
+                                           'director', 'status', 'vote_average',
+                                           'vote_count', 'popularity']]
 
-    processing.minMaxScaler(col_name='vote_average')
-    processing.minMaxScaler(col_name='vote_count')
-    processing.minMaxScaler(col_name='popularity')
+    # Sort the genres in each row
+    for i, j in zip(daataframe_merged['genres'], daataframe_merged.index):
+        list2 = i.strip('[]').replace(' ', '').replace("'", '').split(',')
+        list2.sort()
+        daataframe_merged.at[j, 'genres'] = str(list2)
 
-    processing.dropNaN()
-
-    normalized_df = processing.KBInterrogation()
+    # Split the sorted strings into lists
+    daataframe_merged['genres'] = daataframe_merged['genres'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
+    daataframe_merged['genres'] = daataframe_merged['genres'].str.split(',')
 
     if checking_path(path_csv) is False:
-        normalized_df.to_csv(complete_path, index=False)
+        daataframe_merged.to_csv(complete_path, index=False)
 
+
+def processingForSupervizedLearning(complete_path, path_csv):
+    movie_dataframe = pd.read_csv("./dataset/datasetMerged.csv")
+    processing = Processing(df_movies=None, df_credits=None, df=movie_dataframe)
+
+    #generate a list 'genreList' with all possible unique genres mentioned in the dataset for OneHotEncoding
+    movie_dataframe['genres'] = movie_dataframe['genres'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
+    movie_dataframe['genres'] = movie_dataframe['genres'].str.split(',')
+    genreList = []
+    for index, row in movie_dataframe.iterrows():
+        genres = row["genres"]
+        for genre in genres:
+            if genre not in genreList:
+                genreList.append(genre)
+    movie_dataframe['genres_bin'] = movie_dataframe['genres'].apply(lambda x: processing.oneHotEncoding(x))
+
+    #generate a list 'castlist' with all possible unique genres mentioned in the dataset for OneHotEncoding (salva lo stesso OneHot!! prov a ad usare la funzione che sai usare)
+    for i, j in zip(movie_dataframe['cast'], movie_dataframe.index):
+        list2 = []
+        list2 = i[:4]
+        movie_dataframe.loc[j, 'cast'] = str(list2)
+    movie_dataframe['cast'] = movie_dataframe['cast'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
+    movie_dataframe['cast'] = movie_dataframe['cast'].str.split(',')
+    for i, j in zip(movie_dataframe['cast'], movie_dataframe.index):
+        list2 = []
+        list2 = i
+        list2.sort()
+        movie_dataframe.loc[j, 'cast'] = str(list2)
+    movie_dataframe['cast'] = movie_dataframe['cast'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
+    castList = []
+    for index, row in movie_dataframe.iterrows():
+        cast = row["cast"]
+        for i in cast:
+            if i not in castList:
+                castList.append(i)
+    movie_dataframe['cast_bin'] = movie_dataframe['cast'].apply(lambda x: processing.oneHotEncoding(x))
+
+    print(movie_dataframe)
+    if checking_path(path_csv) is False:
+        movie_dataframe.to_csv(complete_path, index=False)
 
 if __name__ == "__main__":
-    api_key = '293e12b22f35ee4b22ee998909252150'
-    endpoint = "movie/popular"  # Esempio: film popolari
-    max_pages = 150  # Numero massimo di pagine da ottenere
     path_csv = "./dataset/"
-
-    # estrazione dati da server TMDb
-    file_path = path_csv + "normalized_Popular_film.csv"
+    file_path = path_csv + "datasetMerged.csv"
     if os.path.isfile(file_path) is False:
-        TMDbAPI = TMDbAPI(api_key)
-        complete_path = path_csv + "normalized_Popular_film.csv"
-        processingPopularFilmDataset(complete_path, path_csv)
+        complete_path = path_csv + "datasetMerged.csv"
+        processingDataset(complete_path, path_csv)
 
-    df = pd.read_csv("./dataset/normalized_Popular_film.csv")
+    df = pd.read_csv("./dataset/datasetMerged.csv")
 
-    #modelli di apprendimento supervisionato
+    print("Data Exploration")
+    plotter = PlottingGraphs(df)
+    plotter.plotHightsData(col_name='genres', title_graph='Untilted 1')
+    plotter.plotHightsData(col_name='cast', title_graph='Untilted 2')
+    plotter.plotHitghtsDirector()
+    # aggiungere wordcloud!
+
+    print("Reasoning by inference")
+    path_csv = "./dataset/"
+    file_path = path_csv + "normalizedDataset.csv"
+    if os.path.isfile(file_path) is False:
+        complete_path = path_csv + "normalizedDataset.csv"
+        processingForSupervizedLearning(complete_path, path_csv)
+
+    df = pd.read_csv("./dataset/normalizedDataset.csv")
+    # task
+
+    # modelli di apprendimento supervisionato
+    '''
     seed = 53
     df_titles = df['title']
     df = df.drop('title', axis=1)
     X = df
     Y = df['likeable']
     X = X.drop('likeable', axis=1)
-    x_train, x_test, y_train_reg, y_test_reg = train_test_split(X, Y,
-                                                                stratify=round(Y),
-                                                                test_size=0.30,
-                                                                train_size=0.70,
-                                                                shuffle=True, random_state=seed)
-    y_train = round(y_train_reg)
-    y_test = round(y_test_reg)
+    '''
 
-    print("risultati ottenuti dai modelli")
-    #RandomForest(x_train, x_test, y_train, y_test, df_titles).evaluation_models(seed)
-    MyDecisionTreeClassifier(x_train, x_test, y_train, y_test).evaluation_model(seed, 'decisionTree.dot')
-    #SVM(x_train, x_test, y_train, y_test).evaluate_model(seed)
-    #KNN(x_train, x_test, y_train, y_test).evaluation_model(seed)
-    #NeuralNetwork(x_train, x_test, y_train, y_test).evaluate_model(seed)
-    #GaussianNeuralBayes(x_train, x_test, y_train, y_test).evaluate_model(seed)
-    #RegressioneLineare(x_train, x_test, y_train_reg, y_test_reg, df_titles).evaluate_model(seed)
-    #LogisticRegressionClass(x_train, x_test, y_train, y_test).evaluate_model(seed)
+    # x_train, x_test, y_train_reg, y_test_reg = train_test_split(X, Y,
+    # stratify=round(Y),
+    # test_size=0.30,
+    # train_size=0.70,
+    # shuffle=True, random_state=seed)
+    # y_train = round(y_train_reg)
+    # y_test = round(y_test_reg)
+
+    # RandomForest(x_train, x_test, y_train, y_test, df_titles).evaluation_models(seed)
+    # MyDecisionTreeClassifier(x_train, x_test, y_train, y_test).evaluation_model(seed, 'decisionTree.dot')
+    # KNN(x_train, x_test, y_train, y_test).evaluation_model(seed)
+    # RegressioneLineare(x_train, x_test, y_train_reg, y_test_reg, df_titles).evaluate_model(seed)
