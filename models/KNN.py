@@ -10,7 +10,7 @@ from processing.Proccessing import Processing
 
 class KNN:
     def __init__(self, x_train, x_test, y_train, y_test, df_titles):
-        self.knn = KNeighborsClassifier()
+        self.knn = KNeighborsClassifier(metric='cosine')
         self.x_train = x_train
         self.x_test = x_test
         self.y_train = y_train
