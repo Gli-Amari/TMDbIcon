@@ -1,7 +1,10 @@
 
 import json
+
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder, MultiLabelBinarizer
+
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 import pandas as pd
 from pyswip import Prolog
 import matplotlib.pyplot as plt
@@ -16,14 +19,14 @@ class Processing:
             self.df_movies: pd.DataFrame = df_movies
             self.df_credits: pd.DataFrame = df_credits
 
-    def oneHotEncoding(self, list_encoding):
-        binaryList = []
-        for genre in list_encoding:
-            if genre in list_encoding:
-                binaryList.append(1)
-            else:
-                binaryList.append(0)
-        return binaryList
+    def oneHotEncoding(self, col_name):
+        self.df[col_name] = self.df[col_name].str.replace("'", "")
+        self.df[col_name] = self.df[col_name].str.replace('"', '')  # Rimuove apici doppi
+        self.df[col_name] = self.df[col_name].str.replace("[", "").str.replace("]", "").str.strip()
+
+        encoder = LabelEncoder()
+        self.df[col_name] = encoder.fit_transform(self.df[col_name])
+        return self.df
 
     def convertJSONToStringMovies(self, col_name, value_index):
         self.df_movies[col_name] = self.df_movies[col_name].apply(json.loads)
@@ -50,7 +53,10 @@ class Processing:
 
     def minMaxScaler(self, col_name):
         scaler = MinMaxScaler()
-        self.df[col_name] = scaler.fit_transform(self.df[[col_name]])
+        scaled_values = scaler.fit_transform(self.df[[col_name]])
+        scaled_values = scaled_values.round(3)
+        self.df[col_name] = scaled_values
+
         return self.df
 
     def getDfMovies(self):
@@ -64,19 +70,6 @@ class Processing:
 
     def dropNaN(self):
         self.df.dropna(inplace=True)
-        return self.df
-
-    def KBInterrogation(self):
-        prolog = Prolog()
-        prolog.consult('./supervized_KB.pl')
-        result = []
-        for _, row in self.df.iterrows():
-            assertz = ('gradimento_bilanciato(' + str(row['vote_average'])
-                       + ',' + str(row['vote_count']) + ',' + str(
-                        row['popularity']) + ',' + 'Ratio).')
-            result.append(list(prolog.query(assertz))[0]['Ratio'])
-
-        self.df['likeable'] = result
         return self.df
 
     def integer_to_string(self, col_name):

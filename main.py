@@ -8,6 +8,7 @@ from models.DecisionTreeClassifier import DecisionTreeClassifier, MyDecisionTree
 from models.KNN import KNN
 from models.RandomForest import RandomForest
 from models.LinearRegression import RegressioneLineare
+from KnowledgEngigne.KnowledgEngigne import KnwoledgeEngine
 from processing.Proccessing import Processing
 
 
@@ -48,7 +49,7 @@ def processingDataset(complete_path, path_csv):
     credits.rename(columns={'crew': 'director'}, inplace=True)
 
     daataframe_merged = movies.merge(credits, left_on='id', right_on='movie_id', how='left')
-    daataframe_merged = daataframe_merged[['id', 'original_title', 'original_language',
+    daataframe_merged = daataframe_merged[['original_title', 'original_language',
                                            'overview', 'genres',
                                            'cast', 'keywords',
                                            'director', 'status', 'vote_average',
@@ -68,41 +69,26 @@ def processingDataset(complete_path, path_csv):
         daataframe_merged.to_csv(complete_path, index=False)
 
 
+
 def processingForSupervizedLearning(complete_path, path_csv):
     movie_dataframe = pd.read_csv("./dataset/datasetMerged.csv")
     processing = Processing(df_movies=None, df_credits=None, df=movie_dataframe)
 
-    #generate a list 'genreList' with all possible unique genres mentioned in the dataset for OneHotEncoding
-    movie_dataframe['genres'] = movie_dataframe['genres'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
-    movie_dataframe['genres'] = movie_dataframe['genres'].str.split(',')
-    genreList = []
-    for index, row in movie_dataframe.iterrows():
-        genres = row["genres"]
-        for genre in genres:
-            if genre not in genreList:
-                genreList.append(genre)
-    movie_dataframe['genres_bin'] = movie_dataframe['genres'].apply(lambda x: processing.oneHotEncoding(x))
+    processing.oneHotEncoding(col_name='genres')
+    processing.oneHotEncoding(col_name='cast')
+    processing.oneHotEncoding(col_name='keywords')
+    processing.oneHotEncoding(col_name='status')
+    processing.oneHotEncoding(col_name='director')
+    processing.oneHotEncoding(col_name='original_language')
 
-    #generate a list 'castlist' with all possible unique genres mentioned in the dataset for OneHotEncoding (salva lo stesso OneHot!! prov a ad usare la funzione che sai usare)
-    for i, j in zip(movie_dataframe['cast'], movie_dataframe.index):
-        list2 = []
-        list2 = i[:4]
-        movie_dataframe.loc[j, 'cast'] = str(list2)
-    movie_dataframe['cast'] = movie_dataframe['cast'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
-    movie_dataframe['cast'] = movie_dataframe['cast'].str.split(',')
-    for i, j in zip(movie_dataframe['cast'], movie_dataframe.index):
-        list2 = []
-        list2 = i
-        list2.sort()
-        movie_dataframe.loc[j, 'cast'] = str(list2)
-    movie_dataframe['cast'] = movie_dataframe['cast'].str.strip('[]').str.replace(' ', '').str.replace("'", '')
-    castList = []
-    for index, row in movie_dataframe.iterrows():
-        cast = row["cast"]
-        for i in cast:
-            if i not in castList:
-                castList.append(i)
-    movie_dataframe['cast_bin'] = movie_dataframe['cast'].apply(lambda x: processing.oneHotEncoding(x))
+    processing.minMaxScaler(col_name= 'vote_average')
+    processing.minMaxScaler(col_name='vote_count')
+    processing.minMaxScaler(col_name='popularity')
+    processing.minMaxScaler(col_name='director')
+    processing.minMaxScaler(col_name='keywords')
+    processing.minMaxScaler(col_name='cast')
+    processing.minMaxScaler(col_name='genres')
+    processing.minMaxScaler(col_name='original_language')
 
     print(movie_dataframe)
     if checking_path(path_csv) is False:
@@ -132,7 +118,13 @@ if __name__ == "__main__":
         processingForSupervizedLearning(complete_path, path_csv)
 
     df = pd.read_csv("./dataset/normalizedDataset.csv")
-    # task
+
+    knowledgeEngine = KnwoledgeEngine(df)
+    knowledgeEngine.createFacts()
+    knowledgeEngine.KBInterrogation() #even. salvare i progressi inn csv
+
+    print(df)
+
 
     # modelli di apprendimento supervisionato
     '''
