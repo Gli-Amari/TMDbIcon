@@ -69,7 +69,6 @@ def processingDataset(complete_path, path_csv):
         daataframe_merged.to_csv(complete_path, index=False)
 
 
-
 def processingForSupervizedLearning(complete_path, path_csv):
     movie_dataframe = pd.read_csv("./dataset/datasetMerged.csv")
     processing = Processing(df_movies=None, df_credits=None, df=movie_dataframe)
@@ -81,7 +80,7 @@ def processingForSupervizedLearning(complete_path, path_csv):
     processing.oneHotEncoding(col_name='director')
     processing.oneHotEncoding(col_name='original_language')
 
-    processing.minMaxScaler(col_name= 'vote_average')
+    processing.minMaxScaler(col_name='vote_average')
     processing.minMaxScaler(col_name='vote_count')
     processing.minMaxScaler(col_name='popularity')
     processing.minMaxScaler(col_name='director')
@@ -94,6 +93,7 @@ def processingForSupervizedLearning(complete_path, path_csv):
     if checking_path(path_csv) is False:
         movie_dataframe.to_csv(complete_path, index=False)
 
+
 if __name__ == "__main__":
     path_csv = "./dataset/"
     file_path = path_csv + "datasetMerged.csv"
@@ -105,9 +105,11 @@ if __name__ == "__main__":
 
     print("Data Exploration")
     plotter = PlottingGraphs(df)
-    plotter.plotHightsData(col_name='genres', title_graph='Untilted 1')
-    plotter.plotHightsData(col_name='cast', title_graph='Untilted 2')
+    plotter.frequent_keywords(column_name='keywords')
+    plotter.plotHightsGenres(col_name='genres', title_graph='Gneneri più frequenti')
+    plotter.plotHightsData(col_name='cast', title_graph='Attori più frequenti')
     plotter.plotHitghtsDirector()
+
     # aggiungere wordcloud!
 
     print("Reasoning by inference")
@@ -121,10 +123,9 @@ if __name__ == "__main__":
 
     knowledgeEngine = KnwoledgeEngine(df)
     knowledgeEngine.createFacts()
-    knowledgeEngine.KBInterrogation() #even. salvare i progressi inn csv
+    knowledgeEngine.KBInterrogation()  # even. salvare i progressi inn csv
 
     print(df)
-
 
     # modelli di apprendimento supervisionato
     '''

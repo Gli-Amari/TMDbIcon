@@ -7,33 +7,27 @@ from nltk.corpus import stopwords
 from collections import Counter
 from nltk.corpus import stopwords
 
+
 class PlottingGraphs:
     def __init__(self, df):
         self.df: pd.DataFrame = df
 
-    def plotWorldCloud(self):
-        # Carica le stopwords da nltk
-        stop_words = set(stopwords.words('english'))
-        stop_words.update(',', ';', '!', '?', '.', '(', ')', '$', '#', '+', ':', '...', ' ', '')
+    def frequent_keywords(self, column_name='keywords', top_n=20):
+        # Rimozione dei caratteri '[', ']', e "'" dalle keywords
+        all_keywords = self.df[column_name].dropna().str.replace('[', '').str.replace(']', '').str.replace("'",'').str.split(', ')
 
-        words = self.df['keywords'].dropna().str.lower().str.split()
+        # Unione di tutte le keywords in una lista e conteggio della frequenza
+        all_keywords = [keyword for sublist in all_keywords for keyword in sublist]
+        keyword_count = Counter(all_keywords)
+        top_keywords = dict(keyword_count.most_common(top_n))
 
-        word_list = [word for sublist in words for word in sublist]
-
-        filtered_words = [word for word in word_list if word not in stop_words]
-
-        word_freq = Counter(filtered_words)
-
-        common_words = word_freq.most_common(20)
-
-        words, frequencies = zip(*common_words)
-
+        # Plot del grafico a barre delle top keywords
         plt.figure(figsize=(10, 6))
-        plt.bar(words, frequencies)
-        plt.xticks(rotation=45)
-        plt.xlabel('Words')
-        plt.ylabel('Frequency')
-        plt.title('PAROLE PIU USATE')
+        plt.bar(top_keywords.keys(), top_keywords.values(), color='skyblue')
+        plt.xticks(rotation=90)
+        plt.xlabel('Keywords')
+        plt.ylabel('Frequenza')
+        plt.title(f'Top {top_n} Keywords più utilizzate nel DataFrame')
         plt.tight_layout()
         plt.show()
 
@@ -46,6 +40,7 @@ class PlottingGraphs:
             ax.text(.5, i, v, fontsize=12, color='white', weight='bold')
         plt.title('REGISTI CON PIU APPARENCE')
         plt.show()
+
 
     def plotHightsData(self, col_name, title_graph):
         self.df[col_name] = self.df[col_name].str.strip('[]').str.replace(' ', '').str.replace("'", '')
@@ -63,3 +58,22 @@ class PlottingGraphs:
         plt.title(title_graph)
         plt.show()
         return plt
+
+    def plotHightsGenres(self, col_name, title_graph):
+        self.df[col_name] = self.df[col_name].str.strip('[]').str.replace(' ', '').str.replace("'", '')
+        self.df[col_name] = self.df[col_name].str.split(',')
+
+        plt.figure(figsize=(10, 8))
+        list1 = []
+        for i in self.df[col_name]:
+            list1.extend(i)
+        top_10_values = pd.Series(list1).value_counts()[:10]
+
+        labels = top_10_values.index
+        sizes = top_10_values.values
+
+        # Plot del grafico a torta
+        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+        plt.axis('equal')  # Assicura che il grafico sia un cerchio piuttosto che un'ellisse
+        plt.title(title_graph)
+        plt.show()
