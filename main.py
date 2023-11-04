@@ -10,6 +10,7 @@ from models.RandomForest import RandomForest
 from models.LinearRegression import RegressioneLineare
 from KnowledgEngigne.KnowledgEngigne import KnwoledgeEngine
 from processing.Proccessing import Processing
+from models.SVM import SVM
 
 
 def checking_path(path_csv):
@@ -123,27 +124,36 @@ if __name__ == "__main__":
 
     knowledgeEngine = KnwoledgeEngine(df)
     knowledgeEngine.createFacts()
-    knowledgeEngine.KBInterrogation()  # even. salvare i progressi inn csv
+    learningDF = knowledgeEngine.KBInterrogation()
+    learningDF.to_csv("./dataset/learningDataset.csv")
 
-    print(df)
+    learningDataset = pd.read_csv("./dataset/learningDataset.csv")
 
-    # modelli di apprendimento supervisionato
-    '''
+    print("Top 10 film by inference: ")
+    learningDataset = learningDataset.sort_values(by='ratio_likeable', ascending=False)
+    firts_10_values = learningDataset[['original_title', 'ratio_likeable']].head(10)
+    print(firts_10_values)
+
+    firts_10_values.to_csv("./rankingResult/ranking_by_inference.csv")
+
+    print("Machine Learning:")
+
+    learningDataset = learningDataset[['vote_average', 'vote_count', 'popularity', 'ratio_likeable', 'genres', 'cast', 'keywords', 'director', 'status']]
+
     seed = 53
-    df_titles = df['title']
-    df = df.drop('title', axis=1)
-    X = df
-    Y = df['likeable']
-    X = X.drop('likeable', axis=1)
-    '''
+    X = learningDataset
+    Y = learningDataset['ratio_likeable']
+    X = X.drop('ratio_likeable', axis=1)
 
-    # x_train, x_test, y_train_reg, y_test_reg = train_test_split(X, Y,
-    # stratify=round(Y),
-    # test_size=0.30,
-    # train_size=0.70,
-    # shuffle=True, random_state=seed)
-    # y_train = round(y_train_reg)
-    # y_test = round(y_test_reg)
+    x_train, x_test, y_train_reg, y_test_reg = train_test_split(X, Y,
+                                                                stratify=round(Y),
+                                                                test_size=0.30,
+                                                                train_size=0.70,
+                                                                shuffle=True, random_state=seed)
+    y_train = round(y_train_reg)
+    y_test = round(y_test_reg)
+
+    SVM(x_train, x_test, y_train, y_test).evaluate_model(seed)
 
     # RandomForest(x_train, x_test, y_train, y_test, df_titles).evaluation_models(seed)
     # MyDecisionTreeClassifier(x_train, x_test, y_train, y_test).evaluation_model(seed, 'decisionTree.dot')
