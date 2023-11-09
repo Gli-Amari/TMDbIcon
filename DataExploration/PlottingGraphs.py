@@ -1,11 +1,7 @@
 import pandas as pd
-from matplotlib import pyplot as plt
 import seaborn as sns
 import matplotlib.pyplot as plt
-import nltk
-from nltk.corpus import stopwords
 from collections import Counter
-from nltk.corpus import stopwords
 
 
 class PlottingGraphs:
@@ -14,7 +10,9 @@ class PlottingGraphs:
 
     def frequent_keywords(self, column_name='keywords', top_n=20):
         # Rimozione dei caratteri '[', ']', e "'" dalle keywords
-        all_keywords = self.df[column_name].dropna().str.replace('[', '').str.replace(']', '').str.replace("'",'').str.split(', ')
+        all_keywords = self.df[column_name].dropna().str.replace('[', '').str.replace(']', '').str.replace("'",
+                                                                                                           '').str.split(
+            ', ')
 
         # Unione di tutte le keywords in una lista e conteggio della frequenza
         all_keywords = [keyword for sublist in all_keywords for keyword in sublist]
@@ -40,7 +38,6 @@ class PlottingGraphs:
             ax.text(.5, i, v, fontsize=12, color='white', weight='bold')
         plt.title('REGISTI CON PIU APPARENCE')
         plt.show()
-
 
     def plotHightsData(self, col_name, title_graph):
         self.df[col_name] = self.df[col_name].str.strip('[]').str.replace(' ', '').str.replace("'", '')
@@ -77,3 +74,18 @@ class PlottingGraphs:
         plt.axis('equal')  # Assicura che il grafico sia un cerchio piuttosto che un'ellisse
         plt.title(title_graph)
         plt.show()
+
+    def plotHistVoteAv(self):
+
+        # Crea l'istogramma
+        plt.hist(self.df['vote_average'], bins=20, color='blue', alpha=0.7)
+
+        # Personalizza il grafico
+        plt.title('Distribuzione dei Voti Medi dei Film')
+        plt.xlabel('Voto Medio')
+        plt.ylabel('Numero di Film')
+
+        # Visualizza il grafico
+        plt.show()
+
+

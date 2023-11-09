@@ -19,7 +19,7 @@ class Processing:
             self.df_movies: pd.DataFrame = df_movies
             self.df_credits: pd.DataFrame = df_credits
 
-    def oneHotEncoding(self, col_name):
+    def LabelEncoding(self, col_name):
         self.df[col_name] = self.df[col_name].str.replace("'", "")
         self.df[col_name] = self.df[col_name].str.replace('"', '')  # Rimuove apici doppi
         self.df[col_name] = self.df[col_name].str.replace("[", "").str.replace("]", "").str.strip()
